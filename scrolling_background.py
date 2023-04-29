@@ -16,8 +16,8 @@ def game_over_text():
     over_text = over_font.render("GAME OVER", True, (255, 255, 255))
     screen.blit(over_text, (300, 300))
 
-def you_win_text():
-    over_text = over_font.render("YOU WIN", True, (255, 255, 255))
+def Level_text():
+    over_text = over_font.render("Level : " + str(level), True, (255, 255, 255))
     screen.blit(over_text, (300, 300))
 class ScrollingBackground:
 
@@ -75,14 +75,12 @@ class Lasers :
 
     def UpdateCoords(self):
         self.top = self.top  - 10 
-
 pygame.init()  # initialize pygame
 score_value = 0
+level = 0
 font = pygame.font.Font('freesansbold.ttf', 32)
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 pygame.display.set_caption("Home Invader")
-icon = pygame.image.load("icon.jpeg")
-pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
 screenheight, screenwidth = (666, 1000)
 screen = pygame.display.set_mode((screenwidth, screenheight))
@@ -105,21 +103,25 @@ enemyImg = []
 num_of_enemies = 6
 EnemyX = []
 EnemyY = []
-StartingX = 0
-StartingY = 0
 img = Image.open("Enemy.png")
 ship = Image.open("basketball.png")
 laser = Image.open("laser.jpeg")
 width = img.width
 height = img.height
-for i in range(num_of_enemies):
-    if(StartingX + width > screenwidth):
-        StartingX = 0
-        StartingY += height
-    EnemyY.append(StartingY)
-    EnemyX.append(StartingX)
-    StartingX += width
 
+def reset_level():
+    score_value = 0
+    StartingX = 0
+    StartingY = 0
+    for i in range(num_of_enemies):
+        if(StartingX + width > screenwidth):
+            StartingX = 0
+            StartingY += height
+        EnemyY.append(StartingY)
+        EnemyX.append(StartingX)
+        StartingX += width
+    StartingX = 0
+    StartingY = 0
 # fix indentation
 
 running = True
@@ -127,6 +129,9 @@ while running:
     time = clock.tick(framerate)/1000.0
     x, y = pygame.mouse.get_pos()
     Hero.UpdateCoords(x,y)
+    if(len(EnemyX) == 0):
+        level+=1
+        reset_level()
     for i in range(len(EnemyX)):
         if(pygame.time.get_ticks() % 300.0 == 40.0*(i+1)):
             EnemyLaserX.append(EnemyX[i])
@@ -163,9 +168,6 @@ while running:
             running = False
             game_over_text()
             break
-    if(score_value == num_of_enemies):
-        running = False
-        you_win_text()
     for i in range(len(EnemyX)):
         screen.blit(pygame.image.load("Enemy.png"), (EnemyX[i], EnemyY[i]))
     for i in range(len(LaserX)):
@@ -173,6 +175,8 @@ while running:
     for i in range(len(EnemyLaserX)):
         screen.blit(pygame.image.load("laser.jpeg"), (EnemyLaserX[i], EnemyLaserY[i]))
     show_score(screenwidth-200, screenheight-100)
+    if(running):
+        Level_text()
     pygame.display.update()
     if(running == False):
         pygame.time.delay(1000)
